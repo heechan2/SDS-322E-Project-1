@@ -5,7 +5,8 @@ output: html_document
 
 ## Names and EIDs of Group Members
 Jonathan Choi, jhc3264
-
+Dana Lee,
+Joseph Choi, 
 
 ## Load the Data
 
@@ -46,7 +47,6 @@ How many active (3x3x3) speedcubers are there registered with the WCA? For this 
 
 
 ```{r}
-## Add your code here
 ## Create new dataset valid_competitions that will filter data for years 2022-2024 exclusively
 valid_competitions <- competitions |>
       filter(year >= 2022 & year <= 2024) |>
@@ -58,11 +58,10 @@ active_cubers <- results |>
       group_by(personId) |>
       summarize(competition_count = n_distinct(competitionId)) |>
       filter(competition_count >= 2)
-
-nrow(active_cubers)
+      nrow(active_cubers)
 ```
 
-**Write your answer here.**
+**There are a total of 39482 speedcubers who have competed in at least two competitions in the years 2022-2024.**
 
 ### World Records
 
@@ -71,22 +70,32 @@ This question has two parts:
 1. Who holds the current world record single? 
 
 ```{r}
-## Add your code here
+## joining results data to rankssingle data to collect names and arrange the names from best score to worst score and selecting the name of record holder with their rank and competitionId, returning the first row using slice function and returning the data using head function
+world_record_holder <- rankssingle |>
+      arrange(best) |>
+      left_join(results, by = c('best', 'personId', 'eventId')) |>
+      select(personName, worldRank, competitionId) |>
+      slice(1)
+      head(world_record_holder)
 
 ```
 
-**Write your answer here.**
+**Max Park holds the current world record single of a best score of 313.**
 
 
 On what date was this record set?
 
 
 ```{r}
-## Add your code here
+## filtering the id's of competitions dataset of the record holder's competitionId and selecting the year, month, and day of the row with the corresponding competitionId and returning the data using head function
+world_record_date <- competitions |>
+      filter(id == world_record_holder$competitionId) |>
+      select(year, month, day)
+      head(world_record_date)
 
 ```
 
-**Write your answer here.**
+**The record was set on 6/11/2023.**
 
 
 

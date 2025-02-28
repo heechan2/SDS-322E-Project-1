@@ -4,7 +4,7 @@ output: html_document
 ---
 
 ## Names and EIDs of Group Members
-
+Jonathan Choi
 
 
 ## Load the Data

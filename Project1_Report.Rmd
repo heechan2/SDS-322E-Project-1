@@ -4,7 +4,7 @@ output: html_document
 ---
 
 ## Names and EIDs of Group Members
-Jonathan Choi
+Jonathan Choi, jhc3264
 
 
 ## Load the Data
@@ -47,7 +47,19 @@ How many active (3x3x3) speedcubers are there registered with the WCA? For this 
 
 ```{r}
 ## Add your code here
+## Create new dataset valid_competitions that will filter data for years 2022-2024 exclusively
+valid_competitions <- competitions |>
+      filter(year >= 2022 & year <= 2024) |>
+      select(id)
 
+# Filter results for only valid competitions, filtering competition count greater than or less than 2
+active_cubers <- results |>
+      filter(competitionId %in% valid_competitions$id) |>
+      group_by(personId) |>
+      summarize(competition_count = n_distinct(competitionId)) |>
+      filter(competition_count >= 2)
+
+nrow(active_cubers)
 ```
 
 **Write your answer here.**

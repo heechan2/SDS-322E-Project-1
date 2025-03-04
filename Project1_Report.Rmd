@@ -47,12 +47,12 @@ How many active (3x3x3) speedcubers are there registered with the WCA? For this 
 
 
 ```{r}
-## Create new dataset valid_competitions that will filter data for years 2022-2024 exclusively
+## Create new dataset valid_competitions that will filter data for years 2022-2024 exclusively, then filter results for only valid competitions, filtering competition count greater than or less than 2
+
 valid_competitions <- competitions |>
       filter(year >= 2022 & year <= 2024) |>
       select(id)
 
-# Filter results for only valid competitions, filtering competition count greater than or less than 2
 active_cubers <- results |>
       filter(competitionId %in% valid_competitions$id) |>
       group_by(personId) |>
@@ -71,6 +71,7 @@ This question has two parts:
 
 ```{r}
 ## joining results data to rankssingle data to collect names and arrange the names from best score to worst score and selecting the name of record holder with their rank and competitionId, returning the first row using slice function and returning the data using head function
+
 world_record_holder <- rankssingle |>
       arrange(best) |>
       left_join(results, by = c('best', 'personId', 'eventId')) |>
@@ -88,6 +89,7 @@ On what date was this record set?
 
 ```{r}
 ## filtering the id's of competitions dataset of the record holder's competitionId and selecting the year, month, and day of the row with the corresponding competitionId and returning the data using head function
+
 world_record_date <- competitions |>
       filter(id == world_record_holder$competitionId) |>
       select(year, month, day)
@@ -102,11 +104,21 @@ world_record_date <- competitions |>
 2. Who *previously* held the world record single? On what date was this previous record set?
 
 ```{r}
-## Add your code here
+## Arrange the best times then join necessary tables to have the date, name, and competitionId correspond to each other, then using filter function to condition the year, month, day, to find the time before the current world record date, then save the information of the previous record holder name, best time, competitionId, and time in the prev_world_record_holder dataset and return it using the head function and slice to extract the first row of the dataset
 
+prev_world_record_holder <- rankssingle |>
+      arrange(best) |>
+      left_join(results, by = c('best', 'personId', 'eventId')) |>
+      left_join(competitions, by = c('competitionId' = 'id')) |>
+      filter(year < world_record_date$year | 
+               (year == world_record_date$year & month < world_record_date$month) | 
+               (year == world_record_date$year & month == world_record_date$month & day < world_record_date$day)) |>
+      select(personName, best, competitionId, year, month, day) |>
+      slice(1)
+      head(prev_world_record_holder)
 ```
 
-**Write your answer here.**
+**Yusheng Du previously held the world record single, set on 11/24/2018.**
 
 
 ### Regional Rankings

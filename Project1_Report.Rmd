@@ -104,7 +104,7 @@ world_record_date <- competitions |>
 2. Who *previously* held the world record single? On what date was this previous record set?
 
 ```{r}
-## Arrange the best times then join necessary tables to have the date, name, and competitionId correspond to each other, then using filter function to condition the year, month, day, to find the time before the current world record date, then save the information of the previous record holder name, best time, competitionId, and time in the prev_world_record_holder dataset and return it using the head function and slice to extract the first row of the dataset
+## Arrange the best times then join necessary tables to have the date, name, and competitionId correspond to each other, then using filter function to condition the year, month, day, to find the time before the current world record date, then save the information of the previous record holder name, best time, competitionId, and time in the prev_world_record_holder dataset using select function and return it using the head function and slice to extract the first row of the dataset
 
 prev_world_record_holder <- rankssingle |>
       arrange(best) |>
@@ -128,21 +128,39 @@ This question has two parts:
 1. Amongst all speedcubers, who is the top ranked male speedcuber (for best single solve) in Australia?
 
 ```{r}
-## Add your code here
+## Filter persons dataset to extract australian males, join filtered data with rankssingle dataset to get the rankings, arrange the best time using arrange function, take first row using slice function, then save the information of the best male speedcuber in Australia name, countryId, and best time in the top_male_australia dataset using select function, and return the dataset using the head function
 
+top_male_australia <- persons |>
+      filter(countryId == "Australia" & gender == "m") |>
+      left_join(rankssingle, by = c("id" = "personId")) |>
+      arrange(best) |>
+      slice(1) |>
+      select(name, countryId, best)
+      head(top_male_australia)
 ```
 
-**Write your answer here.**
+**The top ranked male speedcuber for best single solve in Australia is Jode Brewster.**
 
 
 2. Amongst all speedcubers, who is the top ranked female speedcuber (for best single solve time) in Europe?
 
 ```{r}
-## Add your code here
+## Creating list of European countries by filtering for Euope categories in the countries dataset, then filtering the persons dataset for females that are from European countries and joining this filtered data with the rankssingle dataset, then arranging the best time using arrange function, take first row using slice function, then save the information of the best female speedcuber in Europe name, countryId, and best time in the top_female_europe dataset using select function, and return the dataset using the head function
 
+european_countries <- countries |>
+      filter(continentId == "_Europe") |>
+      pull(name)
+
+top_female_europe <- persons %>%
+      filter(countryId %in% european_countries & gender == "f") |>
+      left_join(rankssingle, by = c("id" = "personId")) |>
+      arrange(best) |>
+      slice(1) |>
+      select(name, countryId, best)
+      head(top_female_europe)
 ```
 
-**Write your answer here.**
+**The rop ranked female speedcuber for best single solve time in Europe is Magdalena Pabisz.**
 
 
 

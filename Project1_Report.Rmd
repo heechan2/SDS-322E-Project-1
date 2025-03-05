@@ -5,7 +5,7 @@ output: html_document
 
 ## Names and EIDs of Group Members
 Jonathan Choi, jhc3264
-Dana Lee,
+Dana Lee, ddl2249
 Joseph Choi, 
 
 ## Load the Data

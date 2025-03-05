@@ -175,11 +175,37 @@ Having a time below 5 seconds is considered an elite achievement and most speedc
 
 
 ```{r}
-## Add your code here
+## Create top 10 speedcubers dataset from rankssingle dataset, slicing the first 10 rows and extracting it to the top_10_speedcubers dataset using select function, then create top_10_results dataset from top_10_speedcubers dataset, joining competitions and results dataset and organizing the data based on personName, year, month, day in chronological order from each distinct person, and create count column that will count until value1-value5 for each row has a value less than 500, but also accounting for -1 values as DNF values, then create average_count dataset from top_10_results to find the average total counts until sub-5 solve from each distinct personName using group_by each personName and summarize with calculating using the mean function
 
+top_10_speedcubers <- rankssingle |>
+      arrange(worldRank) |>
+      slice_head(n = 10) |>
+      select(personId, best, worldRank, continentRank, countryRank)
+
+top_10_results <- top_10_speedcubers |>
+      left_join(results, by = "personId") |>
+      filter(!is.na(personName)) |>
+      left_join(competitions %>% select(id, year, month, day), 
+                by = c("competitionId" = "id")) |>
+      select(competitionId, eventId, personName, personId, value1, value2, 
+             value3, value4, value5, year, month, day) |>
+      arrange(personName, year, month, day) |>
+      group_by(personName) |>
+      mutate(sub_500 = pmin(value1, value2, value3, value4, value5) < 500 & 
+               pmin(value1, value2, value3, value4, value5) != -1, 
+             row = row_number()) |>
+      filter(row <= min(row[sub_500], max(row), na.rm = TRUE)) %>%
+      mutate(count = row) |>
+      select(-sub_500, -row)
+      
+average_count <- top_10_results |>
+      group_by(personName) |>
+      summarize(max_count = max(count)) |>
+      summarize(average_count = mean(max_count))
+      head(average_count)
 ```
 
-**Write your answer here.**
+**For the current top 10 speedcubers, the average number of solves done before achieving a sub-5 second solve is 102.9.**
 
 
 
@@ -187,12 +213,26 @@ Having a time below 5 seconds is considered an elite achievement and most speedc
 
 
 ```{r}
-## Add your code here
+## Creating asher_kim dataset from top_10_results dataset, filtering Asher Kim rows of data, and merging month and day columns together for readability in making scatterplot, and creating new columns for solve attempts and solve times to include separate data points to the y axis, then for the modified asher_kim dataset, create scatterplot using geom_point, labeled with labs function, where graph is facet_wrap based on year and adjusting x axis for easier reading of the month and days, where x axis are the merged dates and the y axis are the solve times by 1/100th of a second
 
+asher_kim <- top_10_results |>
+      filter(personName == "Asher Kim-Magierek") |>
+      mutate(date = paste(month, day, sep = "/")) |>
+      pivot_longer(cols = c(value1, value2, value3, value4, value5),
+                   names_to = "solve_attempt", 
+                   values_to = "solve_time")
+asher_kim |>
+      ggplot(aes(x = date, y = solve_time, color = solve_attempt)) +
+      geom_point() +
+      facet_wrap(vars(year), scales = "free_x") +
+      labs(x = "Date (Month/Day)", y = "Solve Time (1/100th sec)", 
+           title = "Asher Kim-Magierek's Solve Times") +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
 
-**Write your answer here.**
+**Asher's solve times in 2017 vary the most compared to the other years of solve times.**
 
 
 ### Up-and-Coming Speed Cubers
@@ -221,18 +261,36 @@ To answer this question, characterize each person using their best *average* sco
 
 Before attempting to answer the question, state what you expect the answer to be below.
 
-**Write your expectation here.**
+**We expect North America to have faster speedcubers on average than Europe.**
 
 
 
 ```{r}
-## Add your code here
+## Join ranskaverage with the persons dataset and selected the columns personId, best, and countryId
 
+regional_averages <- ranksaverage |>
+      inner_join(persons, by = c("personId" = "id")) |>
+      select(personId, best, countryId)
+
+#Joined regional averages with countries dataset to get continent column
+
+regional_averages <- regional_averages |>
+      inner_join(countries, by = c("countryId" = "id"))
+
+#Filtered for Europe and North America through filter function and calculated average scores for each region taking out the NA values from the scores
+
+regional_averages_strong <- regional_averages |>
+      filter(continentId %in% c("_Europe", "_North America")) |>
+      group_by(continentId) |>
+      summarize(avg_best_score = mean(best, na.rm = TRUE), 
+                median_best_score = median(best, na.rm = TRUE), 
+                num_cubers = n())
+      head(regional_averages_strong)
 ```
 
 What do you conclude about speedcubers in Europe vs. North America?
 
-**Write you answer here.**
+**North America has the faster group of speedcubers on average comapred to Europe. North America's average best score is slighlty lower than Europes.**
 
 
 ### Alternative Explanations
